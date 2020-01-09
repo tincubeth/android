@@ -3,15 +3,11 @@ package in3
 import java.net.HttpURLConnection
 import java.net.URL
 
-class IN3 {
+class IN3(var storageProvider: StorageProvider = TempStorageProvider()) {
 
     private external fun init(): Long
     private val ptr: Long
 
-    init {
-        System.loadLibrary("in3")
-        ptr = init()
-    }
 
     /** number of seconds requests can be cached.  */
     var cacheTimeout: Int
@@ -89,9 +85,7 @@ class IN3 {
         external set
 
     /** provides the ability to cache content */
-    var storageProvider: StorageProvider
-        external get
-        external set
+
 
     /** send a request. The request must a valid json-string with method and params  */
     external fun send(request: String): String
@@ -131,4 +125,10 @@ class IN3 {
         }
 
     }
+
+    init {
+        Loader.loadLibrary()
+        ptr = init()
+    }
+
 }

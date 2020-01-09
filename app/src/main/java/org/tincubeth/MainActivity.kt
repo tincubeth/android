@@ -12,13 +12,7 @@ import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
-    private val incubed by lazy {
-        IN3().apply {
-            signatureCount = 1
-
-            chainId = 5
-        }
-    }
+    private val incubed by lazy { IN3() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
