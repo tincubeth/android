@@ -1,26 +1,26 @@
 package in3; /*******************************************************************************
  * This file is part of the Incubed project.
  * Sources: https://github.com/slockit/in3-c
- * 
+ *
  * Copyright (C) 2018-2019 slock.it GmbH, Blockchains LLC
- * 
- * 
+ *
+ *
  * COMMERCIAL LICENSE USAGE
- * 
+ *
  * Licensees holding a valid commercial license may use this file in accordance 
  * with the commercial license agreement provided with the Software or, alternatively, 
  * in accordance with the terms contained in a written agreement between you and 
  * slock.it GmbH/Blockchains LLC. For licensing terms and conditions or further 
  * information please contact slock.it at in3@slock.it.
- * 	
+ *
  * Alternatively, this file may be used under the AGPL license as follows:
- *    
+ *
  * AGPL LICENSE USAGE
- * 
+ *
  * This program is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software 
  * Foundation, either version 3 of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY 
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
  * PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
@@ -32,13 +32,15 @@ package in3; /******************************************************************
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  *******************************************************************************/
 
+import android.content.Context;
+import com.getkeepsafe.relinker.ReLinker;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.*;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.util.Arrays;
 
@@ -51,11 +53,9 @@ public class Loader {
         final String arch = System.getProperty("os.arch").toLowerCase();
         final String model = System.getProperty("sun.arch.data.model");
         if (os.indexOf("linux") >= 0) {
-            if (arch.indexOf("arm") >= 0)
-                return "in3_jni_arm";
+            if (arch.indexOf("arm") >= 0) return "in3_jni_arm";
         }
-        if (model != null && model.equals("32"))
-            return "in3_jni_32";
+        if (model != null && model.equals("32")) return "in3_jni_32";
         return "in3_jni";
     }
 
@@ -65,8 +65,7 @@ public class Loader {
             md.reset();
             byte[] bytes = new byte[2048];
             int numBytes;
-            while ((numBytes = is.read(bytes)) != -1)
-                md.update(bytes, 0, numBytes);
+            while ((numBytes = is.read(bytes)) != -1) md.update(bytes, 0, numBytes);
             return md.digest();
 
         } catch (Exception ex) {
@@ -76,14 +75,13 @@ public class Loader {
         }
     }
 
-    public static void loadLibrary() {
-        if (loaded)
-            return;
+    public static void loadLibrary(Context context) {
+        if (loaded) return;
         loaded = true;
 
         try {
             // try to load it from the path
-            System.loadLibrary(getLibName());
+            ReLinker.loadLibrary(context, getLibName());
             return;
         } catch (java.lang.UnsatisfiedLinkError x) {
         }
@@ -94,14 +92,12 @@ public class Loader {
         String jarPath = "/in3/native/" + libFileName;
 
         URL src = Loader.class.getResource(jarPath);
-        if (src == null)
-            throw new RuntimeException("Could not load the library for " + jarPath);
+        if (src == null) throw new RuntimeException("Could not load the library for " + jarPath);
 
         try {
             File lib = new File(new File(System.getProperty("java.io.tmpdir")), libFileName);
             if (lib.exists() && !Arrays.equals(md5(src.openStream()), md5(new FileInputStream(lib))) && !lib.delete())
-                throw new IOException(
-                        "Could not delete the library from temp-file! Maybe some other proccess is still using it ");
+                throw new IOException("Could not delete the library from temp-file! Maybe some other proccess is still using it ");
 
             if (!lib.exists()) {
                 InputStream is = null;
@@ -111,17 +107,14 @@ public class Loader {
                     os = new FileOutputStream(lib);
                     byte[] buffer = new byte[4096];
                     int read = 0;
-                    while ((read = is.read(buffer)) >= 0)
-                        os.write(buffer, 0, read);
+                    while ((read = is.read(buffer)) >= 0) os.write(buffer, 0, read);
                 } finally {
-                    if (is != null)
-                        is.close();
-                    if (os != null)
-                        os.close();
+                    if (is != null) is.close();
+                    if (os != null) os.close();
                 }
                 if (!System.getProperty("os.name").contains("Windows")) {
                     try {
-                        Runtime.getRuntime().exec(new String[] { "chmod", "755", lib.getAbsolutePath() }).waitFor();
+                        Runtime.getRuntime().exec(new String[]{"chmod", "755", lib.getAbsolutePath()}).waitFor();
                     } catch (Throwable e) {
                     }
                 }
@@ -129,7 +122,7 @@ public class Loader {
             }
             System.load(lib.getAbsolutePath());
 
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new RuntimeException("Could not load the native library ", ex);
         }
     }

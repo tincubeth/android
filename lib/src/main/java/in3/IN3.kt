@@ -1,9 +1,10 @@
 package in3
 
+import android.content.Context
 import java.net.HttpURLConnection
 import java.net.URL
 
-class IN3(var storageProvider: StorageProvider = TempStorageProvider()) {
+class IN3(val context: Context, var storageProvider: StorageProvider = TempStorageProvider()) {
 
     private external fun init(): Long
     private val ptr: Long
@@ -127,7 +128,7 @@ class IN3(var storageProvider: StorageProvider = TempStorageProvider()) {
     }
 
     init {
-        Loader.loadLibrary()
+        Loader.loadLibrary(context)
         ptr = init()
     }
 
