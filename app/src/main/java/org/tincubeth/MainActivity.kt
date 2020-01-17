@@ -23,7 +23,10 @@ class MainActivity : AppCompatActivity() {
             GlobalScope.launch(Dispatchers.Main) {
 
                 helloCom.text = withContext(Dispatchers.Default) {
-                    incubed.send("{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1}")
+                    try {
+                        incubed.send("{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1}")
+                    } catch (e:Exception) {"" + e.message}
+
                 }
 
 
