@@ -33,6 +33,7 @@ package in3; /******************************************************************
  *******************************************************************************/
 
 import android.content.Context;
+import com.getkeepsafe.relinker.MissingLibraryException;
 import com.getkeepsafe.relinker.ReLinker;
 import java.io.File;
 import java.io.FileInputStream;
@@ -83,7 +84,15 @@ public class Loader {
             // try to load it from the path
             ReLinker.loadLibrary(context, getLibName());
             return;
+        } catch (MissingLibraryException x) {
+        }
+
+        try {
+            // try to load it from the path
+            System.load("/data/data/" + context.getPackageName() + "/lib/libin3_jni.so");
+            return;
         } catch (java.lang.UnsatisfiedLinkError x) {
+            x.printStackTrace();
         }
 
         // ok, not found, so we use the one in the package.
